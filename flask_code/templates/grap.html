@@ -183,13 +183,13 @@
 							<div class="date">
 								<ul>
 									<!--<li><span>현재 시각 :</span> </li>-->
-									<li><span>현재 온도 :</span> 25℃</li>
-									<li><span>현재 습도 :</span> 55%</li>
+									<li><span>현재 온도 :</span> {{oneTempData}}</li>
+									<li><span>현재 습도 :</span> {{oneHumiData}}</li>
 								</ul>
 							</div>
 							<div class="body-text">
 								<h3>현재 상태는 다음과 같습니다.</h3>
-								<p>현재 식물의 온도는 25℃이며, 습도는 55% 입니다.</p>
+								<p>현재 식물의 온도는 {{oneTempData}}이며, 습도는 {{oneHumiData}} 입니다.</p>
 								<div class="share">
 									<h4>Share Now -</h4>
 									<ul>
@@ -323,49 +323,103 @@
 		<!--차트 만들기-->
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 		<script type="text/javascript">
-			google.charts.load('current', {'packages':['line']});
+			google.charts.load('current', {'packages':['corechart']});
 			google.charts.setOnLoadCallback(drawChart);
-
+	
 			function drawChart() {
-
-			var data = new google.visualization.DataTable();
-			data.addColumn('number', '날짜');
-			data.addColumn('number', '온도');
-			data.addColumn('number', '습도');
-			
-			// 빨간줄이 있긴 하나 정상적으로 작동이 됨.. 플라스크로부터 데이터를 받아 그래프로 표시..
-			data.addRows( {{chartData|safe}} );
-
-			var options = {
-				chart: {
-				title: '온도 습도 그래프',
-				subtitle: '날짜당 온도 습도 그래프',
-				width: '100%'
-				},
-
-				axes: {
-				x: {
+				var data = new google.visualization.DataTable();
+				data.addColumn('datetime', '날짜');
+				data.addColumn('number', '온도');
+				data.addColumn('number', '습도');
+	
+				// Flask에서 전달받은 데이터를 차트 데이터로 변환
+				var chartData = {{ chartData|tojson|safe }};
+				var formattedData = chartData.map(function(row) {
+					return [new Date(row[0]), row[1], row[2]];
+				});
+	
+				data.addRows(formattedData);
+	
+				var options = {
+					title: '온도 및 습도 그래프',
 					width: '100%',
 					height: 500,
-					0: {side: 'bottom'}
-				}
-				}
-			};
-
-			var mq = window.matchMedia( "(max-width: 1024.98px)" );
-			if (mq.matches) {
-				var options = {
-					legend: {
-					position: 'none'
+					hAxis: {
+						title: '시간',
+						format: 'HH:mm',
+						gridlines: {count: 10}
+					},
+					vAxes: {
+						0: {
+							title: '온도 (°C)',
+							textStyle: {color: '#DC3912'},
+							gridlines: {color: '#ccc'}
+						},
+						1: {
+							title: '습도 (%)',
+							textStyle: {color: '#3366CC'},
+							gridlines: {color: 'transparent'}
+						}
+					},
+					series: {
+						0: {
+							targetAxisIndex: 0,
+							color: '#DC3912',
+							lineWidth: 2,
+							pointSize: 5,
+							pointShape: 'circle',
+							// 점 위에 마우스를 올렸을 때의 크기
+							pointsVisible: true,
+							pointShape: {
+								type: 'circle',
+								rotation: 180
+							}
+						},
+						1: {
+							targetAxisIndex: 1,
+							color: '#3366CC',
+							lineWidth: 2,
+							pointSize: 5,
+							pointShape: 'circle',
+							pointsVisible: true,
+							pointShape: {
+								type: 'circle',
+								rotation: 180
+							}
+						}
+					},
+					legend: {position: 'bottom'},
+				   
+					// 애니메이션 효과
+					animation: {
+						duration: 1000,
+						easing: 'out',
+						startup: true
 					}
-				}   
+				};
+	
+				var chart = new google.visualization.LineChart(document.getElementById('lineChart'));
+	
+				// 차트가 그려질 때 데이터 포인트 클릭 이벤트 추가
+				google.visualization.events.addListener(chart, 'ready', function () {
+					// 데이터 포인트에 호버 효과 추가
+					Array.from(document.getElementsByTagName('circle')).forEach(function(circle) {
+						circle.addEventListener('mouseover', function() {
+							this.style.cursor = 'pointer';
+						});
+					});
+				});
+	
+				chart.draw(data, options);
 			}
-
-			var chart = new google.charts.Line(document.getElementById('lineChart'));
-
-			chart.draw(data, google.charts.Line.convertOptions(options));
-			}
+	
+			// 15초마다 페이지 새로고침
+			setInterval(function() {
+				location.reload();
+			}, 15000);
 		</script>
+		
+		
 		<!-- Bootstrap JS -->
 		<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 		<!-- Main JS -->
