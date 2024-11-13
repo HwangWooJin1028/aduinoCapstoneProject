@@ -7,11 +7,10 @@
 [<img src="https://img.shields.io/badge/roboflow-5C2D91?style=for-the-badge&logo=roboflow&logoColor=white">](https://universe.roboflow.com/project-0rxid/aquaponic_polygan_test)
 
 ## node.js이용하여chatapi사용하기
-1node.js를 설치한다.
-2.terminer에 node .\index.js를 넣어 출력을한다.
-3npm init를 터미널 창에 넣는다.
-3npm install openai
-
-4usage에 있는 것을 복사 한다.
-5openai키에 api키를 발급하여 넣는다.
+1node.js를 설치한다.<br/>
+2.terminer에 node .\index.js를 넣어 출력을한다.<br/>
+3npm init를 터미널 창에 넣는다.<br/>
+3npm install openai<br/>
+4usage에 있는 것을 복사 한다.<br/>
+5openai키에 api키를 발급하여 넣는다.<br/>
 
