@@ -20,12 +20,17 @@
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://fonts.googleapis.com/css?family=Poppins:200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&display=swap" rel="stylesheet">
 		<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Nanum+Gothic&family=Noto+Sans+KR:wght@100..900&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
 		<style>
 			*  {
 				font-family: "Noto Sans KR", "Poppins" ,serif;
 				font-optical-sizing: auto;
 				font-weight: 400;
 				font-style: normal;
+			}
+			.ledBtnArea {
+				margin-top: 10px;
+				margin-bottom: 30px;
 			}
 		</style>
 
@@ -52,7 +57,9 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='css/normalize.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
-		
+
+		<!--LED 버튼 CSS-->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/LEDbuttonStyle.css') }}">		
     </head>
     <body>
 	
@@ -129,6 +136,7 @@
 											<li><a href="/">홈</a></li>
 											<li><a href="/grap">실시간 온도.습도 측정</a></li>
 											<li class="active"><a href="#">실시간 카메라 확인</a></li>
+											<li><a href="https://smartform.pages.dev">AI 채팅 바로가기</a></li>
 										</ul>
 									</nav>
 								</div>
@@ -158,6 +166,7 @@
 								<li><a href="/">홈</a></li>
 								<li><i class="icofont-simple-right"></i></li>
 								<li class="active">실시간 카메라 확인</li>
+								<li><a href="https://smartform.pages.dev">AI 채팅 바로가기</a></li>
 							</ul>
 						</div>
 					</div>
@@ -173,24 +182,61 @@
 					<div class="col-12">
 						<div class="inner-content">
 							<div class="image-slider">
-								<img src="http://192.168.154.150:81/stream" alt="ESP32 Live Stream" width="320" height="480" style="height: 500px;">
+								<!-- 기존의 영상을 띄워주기만 하는 코드
+								<img src="http://192.168.233.149:81/stream" alt="ESP32 Live Stream" width="320" height="480" style="height: 500px;">
+								-->
+								<!-- url_for() 를 이용하여 /video_feed 로 -->
+								<img src="{{ url_for('video_feed') }}" alt="ESP32 Live Stream" width="320" height="480" style="height: 500px;">
 							</div>
 							<div class="date">
 								<ul>
 									<!--<li><span>현재 시각 :</span> </li>-->
-									<li><span>현재 온도 :</span> 25℃</li>
-									<li><span>현재 습도 :</span> 55%</li>
+									<li><span>현재 온도 :</span> {{oneTempData}}°C 
+										<span>&nbsp&nbsp&nbsp&nbsp현재 습도 :</span> {{oneHumiData}}%</li>
+									<!--<li><span>현재 습도 :</span> {{oneHumiData}}%</li>-->
 								</ul>
 							</div>
+							
 							<div class="body-text">
-								<h3>현재 상태는 다음과 같습니다.</h3>
-								<p>현재 식물의 온도는 25℃이며, 습도는 55% 입니다.<br>또한, 현재 상추는 먹을 수 있는 상태가 아닙니다.</p>
+								<h3>현재 상태는 다음과 같습니다:</h3>
+								<br>
+								<div class="status-card-display">
+									<!--<div class="status-card" style="border-top: 4px solid #45BB89;">
+										<div class="status-card-header">성장환경</div>
+										<div class="status-card-main">
+											<i class="fa-brands fa-envira status-card-icon"></i>
+											<p class="status-card-content">쾌적한 환경입니다.</p>
+
+										</div>
+									</div>-->
+									<div class="status-card" style="border-top: 4px solid #3D82AB;">
+										<div class="status-card-header">온도</div>
+										<div class="status-card-main">
+											<i class="fa-solid fa-temperature-low status-card-icon"></i>
+											<p class="status-card-content">{{oneTempData}}°C</p>
+										</div>
+									</div>
+									<div class="status-card" style="border-top: 4px solid #003853;">
+										<div class="status-card-header">습도</div>
+										<div class="status-card-main">
+											<i class="fa-solid fa-droplet status-card-icon"></i>
+											<p class="status-card-content">{{oneHumiData}}%</p>
+										</div>
+									</div>
+									<button class="status-card-button" id="controlButton" style="border-top: 4px solid #F66B0E;">
+										<div class="status-card-header">LED on/off</div>
+										<div class="status-card-main">
+											<i class="fa-regular fa-lightbulb status-card-icon"></i>
+											<p class="status-card-content">ON</p>
+										</div>
+									</button>
+								</div>
 								<div class="share">
 									<h4>Share Now -</h4>
 									<ul>
-										<li><a href="#"><i class="fa fa-facebook-official" aria-hidden="true"></i></a></li>
-										<li><a href="#"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
-										<li><a href="#"><i class="fa fa-linkedin" aria-hidden="true"></i></a></li>
+										<li><a href="#"><i class="icofont-facebook" aria-hidden="true"></i></a></li>
+										<li><a href="#"><i class="icofont-google-plus" aria-hidden="true"></i></a></li>
+										<li><a href="#"><i class="icofont-twitter" aria-hidden="true"></i></a></li>
 									</ul>
 								</div>
 							</div>
@@ -321,5 +367,46 @@
 		<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 		<!-- Main JS -->
 		<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+		<script>
+			
+			$(document).ready(function() {
+				let ledData = {{ ledData | tojson }};
+
+				// 서버에서 온 상태에 따라 버튼 텍스트 및 클래스 변경
+				if (ledData === 1) {  // LED ON 상태
+					$('#controlButton').find('p').text('ON');
+				} else {  // LED OFF 상태
+					$('#controlButton').find('p').text('OFF');
+				}
+				// LED 버튼 클릭 이벤트 핸들러
+				$('#controlButton').on('click', function() {
+					// 현재 버튼 텍스트에 따라 전송할 LED 상태 결정 (1 = ON, 0 = OFF)
+					let currentStatus =$('#controlButton').find('p').text().trim();
+					let newStatus = currentStatus === 'ON' ? 0 : 1;
+					
+					// 서버에 LED 상태 변경 요청 보내기
+					$.ajax({
+						url: "/update_led_status",  // Flask 서버의 경로
+						type: "POST",
+						data: JSON.stringify({ status: newStatus }),
+						contentType: "application/json",
+						success: function(response) {
+							// 서버에서 온 상태에 따라 버튼 텍스트 및 클래스 변경
+							if (response.status === 1) {  // LED ON 상태
+								$('#controlButton').find('p').text('ON');
+							} else {  // LED OFF 상태
+								$('#controlButton').find('p').text('OFF');
+							}
+						},
+						error: function(error) {
+							console.error("LED 상태 변경에 실패했습니다:", error);
+						}
+					});
+				});
+			});
+		</script>
+		
+
     </body>
 </html>
