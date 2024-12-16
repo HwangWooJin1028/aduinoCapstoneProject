@@ -32,6 +32,7 @@ def get_all_thingspeak_data():
      
     ThingSpeak_connect.download_csv_from_thingspeak(csv_filename)
     sensor_utils.convert_csv_to_txt(csv_filename)
+    # sensor_utils.today_convert_csv_to_txt(csv_filename)
     print("하루 전 데이터 변환 작업 완료.")
 
 sched.start()

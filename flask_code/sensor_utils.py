@@ -41,6 +41,45 @@ def clear_sensor_data():
         file.write('')
 
 # CSV 파일을 TXT로 변환
+def today_convert_csv_to_txt(input_csv, output_txt=filename):
+    # UTC와 KST 시간대 설정
+    utc_tz = pytz.UTC  # UTC ISO 
+    kst_tz = pytz.timezone('Asia/Seoul')
+    
+    # 현재 시간을 KST 기준으로 설정하여 오늘 날짜 계산
+    today_kst = datetime.now(kst_tz)
+    today_date = today_kst.strftime("%Y-%m-%d")  # 오늘 날짜 (형식: 'YYYY-MM-DD')
+    
+    with open(input_csv, "r") as csv_file, open(output_txt, "w") as txt_file:
+        csv_reader = csv.reader(csv_file)
+        next(csv_reader)  # 헤더 무시
+        
+        for row in csv_reader:
+            try:
+                date_time, field1, field2 = row[0], row[2], row[3]
+                
+                # UTC 시간을 datetime 객체로 변환 (새로운 형식 처리)
+                # '2024-11-04 09:17:34 UTC' 형식 처리
+                utc_time = datetime.strptime(date_time, "%Y-%m-%d %H:%M:%S UTC")
+                utc_time = utc_tz.localize(utc_time)
+                
+                # UTC를 KST로 변환
+                kst_time = utc_time.astimezone(kst_tz)
+                
+                # 오늘 날짜의 데이터만 필터링
+                if kst_time.strftime("%Y-%m-%d") == today_date:
+                    temperature = float(field1)
+                    humidity = float(field2)
+                    
+                    # 온도와 습도 값이 유효할 때만 텍스트 파일에 기록
+                    if 0 <= temperature <= 100 and 0 <= humidity <= 100:
+                        txt_file.write(f"{kst_time.strftime('%Y-%m-%d %H:%M:%S')},{temperature},{humidity}\n")
+            
+            except (ValueError, IndexError) as e:
+                print(f"Error processing row: {e}")
+                continue  # 데이터에 오류가 있을 경우 건너뛰기
+
+# CSV 파일을 TXT로 변환
 def convert_csv_to_txt(input_csv, output_txt=filename):
     # UTC와 KST 시간대 설정
     utc_tz = pytz.UTC  # UTC ISO 
@@ -79,20 +118,3 @@ def convert_csv_to_txt(input_csv, output_txt=filename):
             except (ValueError, IndexError) as e:
                 print(f"Error processing row: {e}")
                 continue  # 데이터에 오류가 있을 경우 건너뛰기
-
-# 임의의 온도와 습도 데이터를 추가
-# 저장되는 데이터의 형식: 현재날짜 현재시간,온도,습도
-# temperature = 26.3
-# humidity = 75.3
-# save_sensor_data(temperature, humidity)
-
-
-# 데이터를 튜플의 리스트 형태로 집어넣기
-# txt에 저장된 데이터를 리스트 형태로 불러오는 함수 호출
-# 꺼내는 데이터 형식
-# : [('2024-10-28 15:45', 26.3, 75.3), ('2024-10-28 15:45', 26.3, 75.3)]
-#print(load_sensor_data())
-
-# txt에 저장된 온도와 습도의 평균을 계산하여 반환
-# txt에 저장된 온도와 습도 데이터를 불러와 평균을 계산하는 코드
-#print(calculate_averages(load_sensor_data()))

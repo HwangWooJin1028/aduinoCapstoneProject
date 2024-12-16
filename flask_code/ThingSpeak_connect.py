@@ -7,6 +7,10 @@ CHANNEL_ID = "2726166"
 READ_API_KEY = "AU82REPOIW20JKPZ"
 WRITE_API_KEY = "LGD2UEXJJWDQ751F"
 
+LED_CHANNEL_ID = "2726168"
+LED_WRITE_API_KEY = "GITGMUVXH6B46SD4"
+LED_READ_API_KEY = "3CTBI0MAX1DWDU2I"
+
 # US 시간 -> 한국 시간 변경
 def convert_to_korean_time(time_str):
     # ISO 8601 형식의 문자열을 UTC 객체로 변환
@@ -45,7 +49,7 @@ def get_sensor_data_one():
     except Exception as e:
         print(f"Error getting sensor data: {e}")
     
-    return 0, 0  # Return None if there's an error or no data
+    return 0, 0, 0  # Return None if there's an error or no data
 
 # 최근 온도,습도 데이터 10개를 ThingSpeak로부터 가져오기
 def get_sensor_data():
@@ -72,16 +76,45 @@ def get_sensor_data():
         print(f"Error getting sensor data: {e}")
     return []
 
-# LED 상태 변경하는 코드
-def set_led_state(state):
-    url = f"https://api.thingspeak.com/update"
+
+
+# 하나의 LED 데이터를 가져오는 함수
+def get_led_data_one():
+    url = f"https://api.thingspeak.com/channels/" + LED_CHANNEL_ID +"/feeds.json"
     params = {
-        "api_key": WRITE_API_KEY,
-        "field3": 1 if state else 0
+        "api_key": LED_READ_API_KEY,
+        "results": 1  # Retrieve only the latest data
     }
     
     try:
         response = requests.get(url, params=params)
+        if response.status_code == 200:
+            data = response.json()
+            # Check if feeds exist and return the latest values
+            if data.get('feeds'):
+                latest_feed = data['feeds'][0]
+                field3 = float(latest_feed['field3']) if latest_feed['field3'] else 0
+                return field3
+            else:
+                print("No feeds available.")
+    
+    except Exception as e:
+        print(f"Error getting sensor data: {e}")
+    
+    return 0  # Return None if there's an error or no data
+
+
+# LED 상태 변경하는 코드
+def set_led_state(state):
+    url = f"https://api.thingspeak.com/update"
+    params = {
+        "api_key": LED_WRITE_API_KEY,
+        "field3": state
+    }
+    
+    try:
+        response = requests.get(url, params=params)
+        print(response.content)
         return response.status_code == 200
     except Exception as e:
         print(f"Error setting LED state: {e}")
